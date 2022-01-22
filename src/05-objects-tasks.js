@@ -1,3 +1,7 @@
+/* eslint-disable consistent-return */
+/* eslint-disable max-len */
+/* eslint-disable no-param-reassign */
+/* eslint-disable prefer-rest-params */
 /* ************************************************************************************************
  *                                                                                                *
  * Please read the following tutorial before implementing tasks:                                   *
@@ -20,8 +24,12 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-function Rectangle(/* width, height */) {
-  throw new Error('Not implemented');
+function Rectangle(width, height) {
+  return {
+    width,
+    height,
+    getArea() { return width * height; },
+  };
 }
 
 
@@ -35,8 +43,8 @@ function Rectangle(/* width, height */) {
  *    [1,2,3]   =>  '[1,2,3]'
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
-function getJSON(/* obj */) {
-  throw new Error('Not implemented');
+function getJSON(obj) {
+  return JSON.stringify(obj);
 }
 
 
@@ -51,8 +59,8 @@ function getJSON(/* obj */) {
  *    const r = fromJSON(Circle.prototype, '{"radius":10}');
  *
  */
-function fromJSON(/* proto, json */) {
-  throw new Error('Not implemented');
+function fromJSON(proto, json) {
+  return Object.setPrototypeOf(JSON.parse(json), proto);
 }
 
 
@@ -111,32 +119,84 @@ function fromJSON(/* proto, json */) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  str: '',
+  countEL: 0,
+  countId: 0,
+  countPse: 0,
+
+  stringify() {
+    const { str } = this;
+    return str;
+  },
+  element(value) {
+    const tempThis = { ...this };
+    tempThis.countEL += 1;
+    if (tempThis.countEL > 1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.countId !== 0 || this.countCL || this.countAt || this.countClD || this.countPse !== 0) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    tempThis.str += value;
+    return tempThis;
+  },
+  id(value) {
+    const tempThis = { ...this };
+    tempThis.countId += 1;
+    if (tempThis.countId > 1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    if (this.countCL || this.countAt || this.countClD || this.countPse !== 0) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    tempThis.str += `#${value}`;
+    return tempThis;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    const tempThis = { ...this };
+    tempThis.countCL = true;
+    if (this.countAt || this.countClD || this.countPse !== 0) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    tempThis.str += `.${value}`;
+    return tempThis;
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    const tempThis = { ...this };
+    tempThis.countAt = true;
+    if (this.countClD || this.countPse !== 0) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    tempThis.str += `[${value}]`;
+    return tempThis;
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    const tempThis = { ...this };
+    tempThis.countClD = true;
+    if (this.countPse !== 0) {
+      throw new Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+    }
+    tempThis.str += `:${value}`;
+    return tempThis;
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    const tempThis = { ...this };
+    tempThis.countPse += 1;
+    if (tempThis.countPse > 1) {
+      throw new Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    }
+    tempThis.str += `::${value}`;
+    return tempThis;
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
-  },
-
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    const tempThis = { ...this };
+    tempThis.str += `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return tempThis;
   },
 };
 
